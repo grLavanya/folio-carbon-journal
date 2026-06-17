@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './lib/auth';
 import { fetchEntries, createEntry, updateEntry, deleteEntry } from './lib/entries';
 import type { JournalEntry, JournalEntryInsert } from './lib/types';
 import { analyzeEntry } from './lib/gemini';
-import { initWorldHealth, applyImpact, saveWorldHealth } from './lib/worldHealth';
+import { initWorldHealth, applyImpact, saveWorldHealth, recalculateFromEntries } from './lib/worldHealth';
 import type { WorldState } from './lib/worldHealth';
 import AuthScreen from './components/AuthScreen';
 import EntryForm from './components/EntryForm';
@@ -553,7 +553,11 @@ function JournalApp() {
   const handleDelete = async (id: string) => {
     await deleteEntry(id);
     setViewingEntry(null);
-    await loadEntries();
+    const updatedEntries = await fetchEntries();
+    setEntries(updatedEntries);
+    const newScore = recalculateFromEntries(updatedEntries);
+    setHealthScore(newScore);
+    await saveWorldHealth(newScore);
   };
 
   return (

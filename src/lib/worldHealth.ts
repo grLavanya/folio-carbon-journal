@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
+import { analyzeEntry } from './gemini';
 import type { EntryImpact } from './gemini';
+import type { JournalEntry } from './types';
 
 export interface WorldState {
   score: number;
@@ -51,6 +53,16 @@ export function applyImpact(impact: EntryImpact, currentScore: number): WorldSta
     effect: impact.world_effect,
     effectType: impact.impact_type,
   };
+}
+
+export function recalculateFromEntries(entries: JournalEntry[]): number {
+  let score = 50;
+  for (const entry of entries) {
+    const impact = analyzeEntry(entry.category, entry.mood);
+    const delta = impact.impact_score * 0.8;
+    score += delta;
+  }
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 export async function saveWorldHealth(score: number): Promise<void> {
