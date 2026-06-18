@@ -27,7 +27,16 @@ export function analyzeEntry(category: Category, mood: Mood | null): EntryImpact
   const { score: catScore, effect } = CATEGORY_IMPACT[category];
   const moodMod = (mood && MOOD_MODIFIER[mood]) ?? 0;
 
-  const totalScore = catScore + moodMod;
+  let totalScore: number;
+  if (mood === 'concerned') {
+    totalScore = -Math.abs(catScore);
+  } else if (mood === 'neutral') {
+    totalScore = catScore / 2;
+  } else {
+    // Proud, Hopeful, Motivated always positive
+    totalScore = Math.abs(catScore) + moodMod;
+  }
+
   const impactType = totalScore > 0 ? 'positive' : totalScore < 0 ? 'negative' : 'neutral';
 
   // Exceptional = positive category + proud mood (high-impact positive action)

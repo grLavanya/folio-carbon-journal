@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Leaf, Plus, LogOut, BookOpen } from 'lucide-react';
+import { Leaf, Plus, LogOut, BookOpen, X } from 'lucide-react';
 import { AuthProvider, useAuth } from './lib/auth';
 import { fetchEntries, createEntry, updateEntry, deleteEntry } from './lib/entries';
 import type { JournalEntry, JournalEntryInsert } from './lib/types';
@@ -414,20 +414,42 @@ function lerpColor(a: string, b: string, t: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${bl.toString(16).padStart(2, '0')}`;
 }
 
-function Navbar({ onSignOut }: { onSignOut: () => void }) {
+function Navbar({
+  onSignOut,
+  onTogglePanel,
+  showPanel,
+  entriesCount,
+}: {
+  onSignOut: () => void;
+  onTogglePanel: () => void;
+  showPanel: boolean;
+  entriesCount: number;
+}) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-[#FDF6E3]/80 via-[#FDF6E3]/50 to-transparent backdrop-blur-sm">
       <div className="flex items-center gap-2.5">
         <Leaf className="w-6 h-6 text-sage-600" strokeWidth={2.2} />
         <span className="text-xl font-serif font-semibold tracking-tight text-[#3D2518]">Folio</span>
       </div>
-      <button
-        onClick={onSignOut}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-serif font-medium text-[#5C3D2E] hover:bg-[#FDF6E3]/60 transition"
-      >
-        <LogOut className="w-4 h-4" />
-        Sign Out
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onTogglePanel}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-serif font-medium border transition ${showPanel
+              ? 'bg-sage-600 border-sage-600 text-parchment-50 hover:bg-sage-700'
+              : 'bg-[#FDF6E3]/80 border-parchment-300/60 text-[#5C3D2E] hover:bg-[#FDF6E3]/95 shadow-sm'
+            }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          My Entries ({entriesCount})
+        </button>
+        <button
+          onClick={onSignOut}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-serif font-medium text-[#5C3D2E] hover:bg-[#FDF6E3]/60 transition"
+        >
+          <LogOut className="w-4 h-4" />
+          Sign Out
+        </button>
+      </div>
     </nav>
   );
 }
@@ -440,6 +462,7 @@ function JournalApp() {
   const [viewingEntry, setViewingEntry] = useState<JournalEntry | null>(null);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPanel, setShowPanel] = useState(false);
 
   const [healthScore, setHealthScore] = useState(50);
   const [worldEffect, setWorldEffect] = useState<WorldState['effect']>(null);
@@ -564,58 +587,88 @@ function JournalApp() {
   return (
     <div className="w-screen h-screen overflow-hidden bg-[#A8D8EA]">
       <Landscape healthScore={healthScore} worldEffect={worldEffect} effectType={effectType} flowers={flowers} />
-      <Navbar onSignOut={signOut} />
+      <Navbar
+        onSignOut={signOut}
+        onTogglePanel={() => setShowPanel(!showPanel)}
+        showPanel={showPanel}
+        entriesCount={entries.length}
+      />
 
       {/* Impact toasts */}
       <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-5 py-3 rounded-xl font-serif text-sm shadow-lg backdrop-blur-sm border ${
-              toast.exiting ? 'impact-toast-exit' : 'impact-toast-enter'
-            } ${
-              toast.type === 'positive'
+            className={`px-5 py-3 rounded-xl font-serif text-sm shadow-lg backdrop-blur-sm border ${toast.exiting ? 'impact-toast-exit' : 'impact-toast-enter'
+              } ${toast.type === 'positive'
                 ? 'bg-sage-100/90 border-sage-300 text-sage-900'
                 : toast.type === 'negative'
-                ? 'bg-red-50/90 border-red-200 text-red-900'
-                : 'bg-parchment-100/90 border-parchment-300 text-parchment-900'
-            }`}
+                  ? 'bg-red-50/90 border-red-200 text-red-900'
+                  : 'bg-parchment-100/90 border-parchment-300 text-parchment-900'
+              }`}
           >
             {toast.message}
           </div>
         ))}
       </div>
 
-      {/* Journal panel */}
-      <div className="fixed inset-0 z-30 pt-20 pb-6 px-4 sm:px-6 flex justify-center pointer-events-none">
-        <div className="w-full max-w-2xl flex flex-col pointer-events-auto">
-          {/* Header stats */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-[#FDF6E3]/85 backdrop-blur-sm rounded-xl px-4 py-2 border border-parchment-300/40 shadow-sm">
-                <div className="text-xs font-serif text-[#5C3D2E] font-medium">Total Entries</div>
-                <div className="text-lg font-serif font-semibold text-[#3D2518]">{entries.length}</div>
-              </div>
-              <div className="bg-[#FDF6E3]/85 backdrop-blur-sm rounded-xl px-4 py-2 border border-parchment-300/40 shadow-sm">
-                <div className="text-xs font-serif text-[#5C3D2E] font-medium">Carbon Tracked</div>
-                <div className="text-lg font-serif font-semibold text-[#3D5A30]">{totalCarbon.toFixed(1)} kg</div>
-              </div>
-              <div className="bg-[#FDF6E3]/85 backdrop-blur-sm rounded-xl px-4 py-2 border border-parchment-300/40 shadow-sm">
-                <div className="text-xs font-serif text-[#5C3D2E] font-medium">World Health</div>
-                <div className="text-lg font-serif font-semibold text-[#3D2518]">{healthScore}</div>
-              </div>
-            </div>
+      {/* Backdrop overlay for closing the collapsible panel when clicking outside */}
+      {showPanel && (
+        <div
+          className="fixed inset-0 z-30 bg-black/10 backdrop-blur-[1px] md:bg-transparent transition-opacity cursor-pointer"
+          onClick={() => setShowPanel(false)}
+        />
+      )}
+
+      {/* Collapsible Journal entries side panel */}
+      <div
+        className={`fixed right-0 top-0 bottom-0 z-40 w-full sm:w-[450px] bg-[#FDF6E3]/95 backdrop-blur-md border-l border-parchment-300/60 shadow-[0_0_30px_rgba(60,45,20,0.15)] flex flex-col transition-transform duration-300 ease-in-out ${showPanel ? 'translate-x-0' : 'translate-x-full'
+          }`}
+      >
+        {/* Panel Header */}
+        <div className="pt-6 pb-4 px-6 border-b border-parchment-300/40 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-sage-600" />
+            <h2 className="text-xl font-serif font-semibold text-[#3D2518]">My Journal</h2>
+          </div>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => { setEditingEntry(null); setShowForm(true); }}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sage-500 hover:bg-sage-600 active:bg-sage-700 text-parchment-50 font-serif font-medium text-sm shadow-md hover:shadow-lg transition-all"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sage-500 hover:bg-sage-600 active:bg-sage-700 text-parchment-50 font-serif font-medium text-xs shadow-sm transition"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
               New Entry
             </button>
+            <button
+              onClick={() => setShowPanel(false)}
+              className="p-1.5 rounded-lg hover:bg-parchment-200 text-[#7A6248] transition"
+              title="Close Panel"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Panel Content (Scrollable) */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5 scrollbar-thin">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-parchment-50/70 rounded-xl px-3 py-2 border border-parchment-300/40 shadow-sm text-center">
+              <div className="text-[10px] uppercase tracking-wider font-serif text-[#7A6248] font-medium">Entries</div>
+              <div className="text-base font-serif font-bold text-[#3D2518]">{entries.length}</div>
+            </div>
+            <div className="bg-parchment-50/70 rounded-xl px-3 py-2 border border-parchment-300/40 shadow-sm text-center">
+              <div className="text-[10px] uppercase tracking-wider font-serif text-[#7A6248] font-medium">Carbon</div>
+              <div className="text-base font-serif font-bold text-[#3D5A30]">{totalCarbon.toFixed(1)} kg</div>
+            </div>
+            <div className="bg-parchment-50/70 rounded-xl px-3 py-2 border border-parchment-300/40 shadow-sm text-center">
+              <div className="text-[10px] uppercase tracking-wider font-serif text-[#7A6248] font-medium">Health</div>
+              <div className="text-base font-serif font-bold text-[#3D2518]">{healthScore}</div>
+            </div>
           </div>
 
           {/* Entries list */}
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-thin">
+          <div className="space-y-3">
             {error && (
               <div className="p-4 rounded-xl bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-800 text-sm font-serif text-center">
                 {error}
@@ -650,7 +703,7 @@ function JournalApp() {
               <div key={entry.id} onClick={() => setViewingEntry(entry)} className="cursor-pointer">
                 <EntryCard
                   entry={entry}
-                  onEdit={(e) => { e && setEditingEntry(e); }}
+                  onEdit={(e) => { if (e) { setEditingEntry(e); setShowForm(true); } }}
                   onDelete={handleDelete}
                 />
               </div>
@@ -658,6 +711,17 @@ function JournalApp() {
           </div>
         </div>
       </div>
+
+      {/* Floating Action Button (FAB) for quick entry creation */}
+      {!showPanel && (
+        <button
+          onClick={() => { setEditingEntry(null); setShowForm(true); }}
+          className="fixed bottom-6 right-6 z-30 flex items-center justify-center w-14 h-14 rounded-full bg-sage-500 hover:bg-sage-600 active:bg-sage-700 text-parchment-50 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+          title="New Entry"
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+      )}
 
       {/* Modals */}
       {showForm && (
