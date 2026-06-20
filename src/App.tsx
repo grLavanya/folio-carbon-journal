@@ -145,22 +145,10 @@ function BirdGroup() {
 function Flower({ x, y, timestamp }: { x: number; y: number; timestamp: number }) {
   const petalColors = ['#FFB7C5', '#FF9EB5', '#FFC0CB', '#FFA0B4', '#FFD1DC'];
   const centerColor = '#FFE066';
-  const delay = `${-((Date.now() - timestamp) / 1000)}s`;
 
   return (
-    <g transform={`translate(${x}, ${y})`} className="flower-bloom">
-      <g>
-        <animateTransform
-          attributeName="transform"
-          type="scale"
-          values="0;1.05;1"
-          dur="1.2s"
-          begin={delay}
-          fill="freeze"
-          calcMode="spline"
-          keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
-        />
-        {/* Petals */}
+    <g transform={`translate(${x}, ${y})`}>
+      <g className="flower-bloom">
         {petalColors.map((color, i) => {
           const angle = (i * 72) * Math.PI / 180;
           const px = Math.cos(angle) * 5;
@@ -435,8 +423,8 @@ function Navbar({
         <button
           onClick={onTogglePanel}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-serif font-medium border transition ${showPanel
-              ? 'bg-sage-600 border-sage-600 text-parchment-50 hover:bg-sage-700'
-              : 'bg-[#FDF6E3]/80 border-parchment-300/60 text-[#5C3D2E] hover:bg-[#FDF6E3]/95 shadow-sm'
+            ? 'bg-sage-600 border-sage-600 text-parchment-50 hover:bg-sage-700'
+            : 'bg-[#FDF6E3]/80 border-parchment-300/60 text-[#5C3D2E] hover:bg-[#FDF6E3]/95 shadow-sm'
             }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -467,7 +455,14 @@ function JournalApp() {
   const [healthScore, setHealthScore] = useState(50);
   const [worldEffect, setWorldEffect] = useState<WorldState['effect']>(null);
   const [effectType, setEffectType] = useState<WorldState['effectType']>(null);
-  const [flowers, setFlowers] = useState<FlowerState[]>([]);
+  const [flowers, setFlowers] = useState<FlowerState[]>(() => {
+    try {
+      const saved = localStorage.getItem('folio-flowers');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const flowerIdRef = useRef(0);
   const effectTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [toasts, setToasts] = useState<ImpactToast[]>([]);
@@ -493,7 +488,16 @@ function JournalApp() {
     }
   }, [user, loadEntries]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('folio-flowers', JSON.stringify(flowers));
+    } catch {
+      // Ignore storage errors (e.g. quota exceeded)
+    }
+  }, [flowers]);
+
   const triggerWorldReaction = useCallback((impact: WorldState) => {
+    console.log('[Debug] triggerWorldReaction called with:', impact);
     setHealthScore(impact.score);
     setWorldEffect(impact.effect);
     setEffectType(impact.effectType);
