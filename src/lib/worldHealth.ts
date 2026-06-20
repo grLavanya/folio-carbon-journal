@@ -69,13 +69,10 @@ export async function saveWorldHealth(score: number): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  console.log('[WorldHealth] Saving score:', score, 'for user:', user.id);
   const { error } = await supabase
     .from('world_health')
     .upsert({ user_id: user.id, score, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
   if (error) {
     console.error('[WorldHealth] Save error:', error);
-  } else {
-    console.log('[WorldHealth] Save successful');
   }
 }

@@ -47,10 +47,10 @@ export default function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
           </div>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          <button onClick={(e) => { e.stopPropagation(); onEdit(entry); }} className="p-1.5 rounded-lg hover:bg-parchment-200 transition text-[#7A6248] hover:text-sage-700">
+          <button onClick={(e) => { e.stopPropagation(); onEdit(entry); }} aria-label={`Edit "${entry.title}"`} className="p-1.5 rounded-lg hover:bg-parchment-200 transition text-[#7A6248] hover:text-sage-700">
             <Edit3 className="w-4 h-4" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} className="p-1.5 rounded-lg hover:bg-red-50 transition text-[#7A6248] hover:text-red-600">
+          <button onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} aria-label={`Delete "${entry.title}"`} className="p-1.5 rounded-lg hover:bg-red-50 transition text-[#7A6248] hover:text-red-600">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>

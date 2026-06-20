@@ -62,7 +62,7 @@ export default function EntryForm({ onSubmit, onClose, initial }: EntryFormProps
           <h2 className="text-lg font-serif font-semibold text-[#3D2518]">
             {initial ? 'Edit Entry' : 'New Entry'}
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-parchment-200 transition text-[#7A6248]">
+          <button onClick={onClose} aria-label="Close form" className="p-1.5 rounded-lg hover:bg-parchment-200 transition text-[#7A6248]">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -85,11 +85,10 @@ export default function EntryForm({ onSubmit, onClose, initial }: EntryFormProps
                     key={cat.value}
                     type="button"
                     onClick={() => setCategory(cat.value)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-serif font-medium transition border ${
-                      active
-                        ? `${CATEGORY_STYLES[cat.value]} ring-1 ring-sage-400/40 shadow-sm`
-                        : 'border-parchment-300/60 bg-parchment-50 text-[#5C3D2E] hover:bg-parchment-200/60'
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-serif font-medium transition border ${active
+                      ? `${CATEGORY_STYLES[cat.value]} ring-1 ring-sage-400/40 shadow-sm`
+                      : 'border-parchment-300/60 bg-parchment-50 text-[#5C3D2E] hover:bg-parchment-200/60'
+                      }`}
                   >
                     <Icon className="w-4 h-4" />
                     {cat.label}
@@ -132,11 +131,10 @@ export default function EntryForm({ onSubmit, onClose, initial }: EntryFormProps
                   key={m.value}
                   type="button"
                   onClick={() => setMood(mood === m.value ? null : m.value)}
-                  className={`px-3 py-1.5 rounded-full text-sm transition border font-serif ${
-                    mood === m.value
-                      ? 'border-sage-400 bg-sage-50 text-sage-800 ring-1 ring-sage-400/30'
-                      : 'border-parchment-300/60 bg-parchment-50 text-[#5C3D2E] hover:bg-parchment-200/60'
-                  }`}
+                  className={`px-3 py-1.5 rounded-full text-sm transition border font-serif ${mood === m.value
+                    ? 'border-sage-400 bg-sage-50 text-sage-800 ring-1 ring-sage-400/30'
+                    : 'border-parchment-300/60 bg-parchment-50 text-[#5C3D2E] hover:bg-parchment-200/60'
+                    }`}
                 >
                   {m.emoji} {m.label}
                 </button>

@@ -30,7 +30,7 @@ export function analyzeEntry(category: Category, mood: Mood | null): EntryImpact
   let totalScore: number;
   if (mood === 'concerned') {
     totalScore = -Math.abs(catScore);
-  } else if (mood === 'neutral') {
+  } else if (mood === 'neutral' || mood === null) {
     totalScore = catScore / 2;
   } else {
     // Proud, Hopeful, Motivated always positive

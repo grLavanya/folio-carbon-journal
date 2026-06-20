@@ -497,7 +497,6 @@ function JournalApp() {
   }, [flowers]);
 
   const triggerWorldReaction = useCallback((impact: WorldState) => {
-    console.log('[Debug] triggerWorldReaction called with:', impact);
     setHealthScore(impact.score);
     setWorldEffect(impact.effect);
     setEffectType(impact.effectType);
@@ -647,6 +646,7 @@ function JournalApp() {
               onClick={() => setShowPanel(false)}
               className="p-1.5 rounded-lg hover:bg-parchment-200 text-[#7A6248] transition"
               title="Close Panel"
+              aria-label="Close panel"
             >
               <X className="w-5 h-5" />
             </button>
@@ -722,6 +722,7 @@ function JournalApp() {
           onClick={() => { setEditingEntry(null); setShowForm(true); }}
           className="fixed bottom-6 right-6 z-30 flex items-center justify-center w-14 h-14 rounded-full bg-sage-500 hover:bg-sage-600 active:bg-sage-700 text-parchment-50 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
           title="New Entry"
+          aria-label="Create new entry"
         >
           <Plus className="w-7 h-7" />
         </button>

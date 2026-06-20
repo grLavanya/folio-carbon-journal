@@ -49,7 +49,7 @@ export default function EntryDetail({ entry, onClose, onEdit, onDelete }: EntryD
               <p className="text-xs font-serif text-[#7A6248]">{dateStr} at {timeStr}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-parchment-200 transition text-[#7A6248]">
+          <button onClick={onClose} aria-label="Close details" className="p-1.5 rounded-lg hover:bg-parchment-200 transition text-[#7A6248]">
             <X className="w-5 h-5" />
           </button>
         </div>
