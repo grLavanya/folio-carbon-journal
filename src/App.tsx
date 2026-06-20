@@ -17,6 +17,7 @@ interface FlowerState {
   x: number;
   y: number;
   timestamp: number;
+  entryId: string | null;
 }
 
 interface ImpactToast {
@@ -497,7 +498,7 @@ function JournalApp() {
     }
   }, [flowers]);
 
-  const triggerWorldReaction = useCallback((impact: WorldState) => {
+  const triggerWorldReaction = useCallback((impact: WorldState, entryId: string | null = null) => {
     setHealthScore(impact.score);
     setWorldEffect(impact.effect);
     setEffectType(impact.effectType);
@@ -510,6 +511,7 @@ function JournalApp() {
         x: 100 + Math.random() * 1000,
         y: 480 + Math.random() * 100,
         timestamp: Date.now(),
+        entryId,
       };
       setFlowers((prev) => [...prev.slice(-12), newFlower]);
     }
@@ -538,12 +540,12 @@ function JournalApp() {
   const totalCarbon = entries.reduce((sum, e) => sum + e.carbon_value, 0);
 
   const handleCreate = async (data: JournalEntryInsert) => {
-    await createEntry(data);
+    const newEntry = await createEntry(data);
 
     // Rule-based impact analysis
     const impact = analyzeEntry(data.category, data.mood ?? null);
     const worldState = applyImpact(impact, healthScore);
-    triggerWorldReaction(worldState);
+    triggerWorldReaction(worldState, newEntry.id);
 
     // Show toast notification
     const scoreDelta = worldState.score - healthScore;
@@ -586,6 +588,16 @@ function JournalApp() {
     const newScore = recalculateFromEntries(updatedEntries);
     setHealthScore(newScore);
     await saveWorldHealth(newScore);
+
+    // Remove any flower that was bloomed specifically by this entry
+    setFlowers((prev) => prev.filter((f) => f.entryId !== id));
+
+    // Safety net: if the journal is now fully empty, clear any
+    // remaining flowers too (covers older flowers saved before
+    // entryId tracking existed)
+    if (updatedEntries.length === 0) {
+      setFlowers([]);
+    }
   };
 
   return (
